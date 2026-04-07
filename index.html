@@ -101,10 +101,15 @@
     }
     .score-item{background:#f8fafc;border:1px solid var(--border);border-radius:16px;padding:16px;}
     .score-item strong{display:block;margin-bottom:8px;}
-    .tips{text-align:left;margin-top:20px;background:#f8fafc;border:1px solid var(--border);border-radius:16px;padding:18px;}
-    .tips h3{margin-top:0;}
+    .tips,.ranking-box{
+      text-align:left;margin-top:20px;background:#f8fafc;border:1px solid var(--border);border-radius:16px;padding:18px;
+    }
+    .tips h3,.ranking-box h3{margin-top:0;}
     .tips ul{margin:10px 0 0 18px;color:#334155;line-height:1.6;}
+    .ranking-box ol{margin:10px 0 0 18px;color:#334155;line-height:1.8;padding-left:18px;}
+    .ranking-empty{color:var(--muted);}
     .footer-note{text-align:center;color:#cbd5e1;margin-top:16px;font-size:.92rem;}
+    .small-note{font-size:.9rem;color:var(--muted);margin-top:8px;}
     @media (max-width: 640px){
       .intro,.game-body,.game-head,.result{padding:20px;}
       .top-stats{grid-template-columns:1fr;}
@@ -143,8 +148,8 @@
             <p>Cada respuesta incluye una explicación clara para aprender en el momento.</p>
           </div>
           <div class="feature">
-            <h3>🏆 Resultado final</h3>
-            <p>Al terminar, verás tu nivel de protección y consejos para mejorar tu seguridad.</p>
+            <h3>🏆 Ranking global</h3>
+            <p>Al terminar, se mostrará un ranking compartido con todos los jugadores.</p>
           </div>
         </div>
 
@@ -153,6 +158,7 @@
           <input id="playerName" type="text" placeholder="Escribe tu nombre" maxlength="30" />
           <button class="btn btn-primary" id="startBtn">Comenzar juego</button>
         </div>
+        <!-- <div class="small-note">Antes de publicar, reemplaza en el código la constante <b>RANKING_API</b> por la URL de tu Google Apps Script.</div> -->
       </section>
 
       <section id="gameScreen" class="screen">
@@ -217,6 +223,12 @@
           <ul id="tipsList"></ul>
         </div>
 
+        <div class="ranking-box">
+          <h3>🏆 Ranking global</h3>
+          <div id="rankingStatus" class="ranking-empty">Cargando ranking...</div>
+          <ol id="rankingList"></ol>
+        </div>
+
         <div style="margin-top:20px;">
           <button class="btn btn-primary" id="restartBtn">Jugar de nuevo</button>
         </div>
@@ -229,6 +241,9 @@
   </div>
 
   <script>
+    
+    const RANKING_API = "https://script.google.com/macros/s/AKfycbzSl9sXpAAhMb_LNCo3-AbipxMg8sMYE1B61lo52jWtmgg1ZHyzFHXmXsWiS1DH_oM/exec";
+
     const questions = [
       {
         level: "Nivel 1",
@@ -365,6 +380,8 @@
     const finalScore = document.getElementById("finalScore");
     const finalCorrect = document.getElementById("finalCorrect");
     const tipsList = document.getElementById("tipsList");
+    const rankingStatus = document.getElementById("rankingStatus");
+    const rankingList = document.getElementById("rankingList");
 
     document.getElementById("startBtn").addEventListener("click", startGame);
     document.getElementById("restartBtn").addEventListener("click", restartGame);
@@ -435,7 +452,63 @@
       }
     }
 
-    function showResults(){
+    async function saveScore(nombre, puntaje){
+      if(!RANKING_API || RANKING_API.includes("PEGA_AQUI")) return;
+
+      try {
+        await fetch(RANKING_API, {
+          method: "POST",
+          headers: {
+            "Content-Type": "text/plain;charset=utf-8"
+          },
+          body: JSON.stringify({
+            nombre: nombre,
+            puntaje: puntaje
+          })
+        });
+      } catch (error) {
+        console.error("Error guardando puntaje:", error);
+      }
+    }
+
+    async function loadRanking(){
+      if(!RANKING_API || RANKING_API.includes("PEGA_AQUI")) return [];
+
+      try {
+        const response = await fetch(RANKING_API);
+        const data = await response.json();
+        return Array.isArray(data) ? data : [];
+      } catch (error) {
+        console.error("Error cargando ranking:", error);
+        return [];
+      }
+    }
+
+    async function renderRanking(){
+      rankingList.innerHTML = "";
+      rankingStatus.textContent = "Cargando ranking...";
+
+      const ranking = await loadRanking();
+
+      if(!RANKING_API || RANKING_API.includes("PEGA_AQUI")){
+        rankingStatus.textContent = "Debes configurar la URL de Apps Script para mostrar el ranking global.";
+        return;
+      }
+
+      if(!ranking.length){
+        rankingStatus.textContent = "Aún no hay puntajes guardados.";
+        return;
+      }
+
+      rankingStatus.textContent = "";
+      ranking.forEach(item => {
+        const li = document.createElement("li");
+        li.textContent = `${item.nombre} - ${item.puntaje} pts`;
+        rankingList.appendChild(li);
+      });
+    }
+
+    async function showResults(){
       showScreen(resultScreen);
       progressBar.style.width = "100%";
 
@@ -474,6 +547,9 @@
         li.textContent = tip;
         tipsList.appendChild(li);
       });
+
+      await saveScore(playerName, score);
+      await renderRanking();
     }
 
     function restartGame(){
