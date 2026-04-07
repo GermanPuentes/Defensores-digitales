@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Defensores Digitales</title>
+  <style>
+    :root{
+      --bg1:#0b1220;
+      --bg2:#111827;
+      --card:#ffffff;
+      --text:#0f172a;
+      --muted:#64748b;
+      --primary:#2563eb;
+      --primary-2:#1d4ed8;
+      --border:#e2e8f0;
+      --shadow: 0 20px 40px rgba(2, 6, 23, .18);
+      --radius: 20px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: Arial, Helvetica, sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(37,99,235,.25), transparent 26%),
+        radial-gradient(circle at top right, rgba(22,163,74,.18), transparent 24%),
+        linear-gradient(135deg, var(--bg1), var(--bg2));
+      color:#fff;
+      min-height:100vh;
+    }
+    .wrap{max-width:920px;margin:0 auto;padding:28px 16px 48px;}
+    .hero{text-align:center;margin-bottom:20px;}
+    .hero h1{margin:0 0 8px;font-size:clamp(2rem,4vw,3rem);}
+    .hero p{margin:0 auto;max-width:760px;color:#cbd5e1;line-height:1.5;font-size:1rem;}
+    .card{background:var(--card);color:var(--text);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;}
+    .screen{display:none;}
+    .screen.active{display:block;}
+    .intro{padding:30px;}
+    .badge{
+      display:inline-block;padding:8px 14px;border-radius:999px;background:#dbeafe;
+      color:#1d4ed8;font-weight:bold;margin-bottom:14px;font-size:.9rem;
+    }
+    .features{
+      display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+      gap:14px;margin:22px 0;
+    }
+    .feature{background:#f8fafc;border:1px solid var(--border);border-radius:16px;padding:16px;}
+    .feature h3{margin:0 0 8px;font-size:1rem;}
+    .feature p{margin:0;color:var(--muted);font-size:.95rem;line-height:1.45;}
+    .form-row{display:flex;gap:12px;flex-wrap:wrap;margin-top:20px;align-items:center;}
+    input[type="text"]{
+      flex:1 1 250px;padding:14px 16px;border-radius:14px;border:1px solid var(--border);
+      font-size:1rem;outline:none;
+    }
+    input[type="text"]:focus{
+      border-color:#93c5fd;box-shadow:0 0 0 4px rgba(59,130,246,.15);
+    }
+    .btn{
+      border:none;border-radius:14px;cursor:pointer;padding:14px 18px;font-size:1rem;
+      font-weight:bold;transition:.2s transform ease,.2s background ease;
+    }
+    .btn:hover{transform:translateY(-1px);}
+    .btn-primary{background:var(--primary);color:#fff;}
+    .btn-primary:hover{background:var(--primary-2);}
+    .game-head{padding:22px 24px 12px;border-bottom:1px solid var(--border);background:#f8fafc;}
+    .top-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:14px;}
+    .stat{background:#fff;border:1px solid var(--border);border-radius:16px;padding:12px;text-align:center;}
+    .stat .label{display:block;color:var(--muted);font-size:.9rem;margin-bottom:6px;}
+    .stat .value{font-size:1.15rem;font-weight:bold;}
+    .progress-wrap{height:12px;background:#dbeafe;border-radius:999px;overflow:hidden;}
+    .progress{height:100%;width:0%;background:linear-gradient(90deg,#2563eb,#16a34a);transition:width .35s ease;}
+    .game-body{padding:24px;}
+    .level-tag{
+      display:inline-block;background:#eff6ff;color:#1d4ed8;border-radius:999px;
+      padding:7px 12px;font-size:.9rem;font-weight:bold;margin-bottom:14px;
+    }
+    .scenario{margin:0 0 10px;font-size:1.55rem;line-height:1.25;}
+    .scenario-text{color:var(--muted);font-size:1rem;line-height:1.55;margin:0 0 20px;}
+    .options{display:grid;gap:12px;}
+    .option-btn{
+      text-align:left;width:100%;border:1px solid var(--border);background:#fff;color:var(--text);
+      border-radius:16px;padding:16px;font-size:1rem;cursor:pointer;transition:.2s ease;
+    }
+    .option-btn:hover{border-color:#93c5fd;background:#f8fbff;transform:translateY(-1px);}
+    .feedback{
+      margin-top:18px;border-radius:16px;padding:16px;display:none;border:1px solid var(--border);background:#f8fafc;
+    }
+    .feedback.show{display:block;}
+    .feedback.correct{background:#f0fdf4;border-color:#bbf7d0;}
+    .feedback.incorrect{background:#fef2f2;border-color:#fecaca;}
+    .feedback h3{margin:0 0 8px;font-size:1.1rem;}
+    .feedback p{margin:0;line-height:1.5;color:#334155;}
+    .feedback-actions{margin-top:14px;}
+    .result{padding:34px 24px;text-align:center;}
+    .result .emoji{font-size:3.2rem;margin-bottom:10px;}
+    .result h2{margin:0 0 8px;font-size:2rem;}
+    .result p{color:var(--muted);line-height:1.6;max-width:680px;margin:0 auto 16px;}
+    .score-box{
+      display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+      gap:12px;margin:22px 0;text-align:left;
+    }
+    .score-item{background:#f8fafc;border:1px solid var(--border);border-radius:16px;padding:16px;}
+    .score-item strong{display:block;margin-bottom:8px;}
+    .tips{text-align:left;margin-top:20px;background:#f8fafc;border:1px solid var(--border);border-radius:16px;padding:18px;}
+    .tips h3{margin-top:0;}
+    .tips ul{margin:10px 0 0 18px;color:#334155;line-height:1.6;}
+    .footer-note{text-align:center;color:#cbd5e1;margin-top:16px;font-size:.92rem;}
+    @media (max-width: 640px){
+      .intro,.game-body,.game-head,.result{padding:20px;}
+      .top-stats{grid-template-columns:1fr;}
+      .scenario{font-size:1.3rem;}
+      .form-row{flex-direction:column;}
+      .form-row .btn,.form-row input{width:100%;}
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="hero">
+      <h1>🛡️ Defensores Digitales</h1>
+      <p>
+        Un juego corto y online para aprender a protegerte en internet con situaciones reales:
+        correos falsos, contraseñas, WiFi público, permisos de apps y privacidad en redes sociales.
+      </p>
+    </div>
+
+    <div class="card">
+      <section id="startScreen" class="screen active intro">
+        <span class="badge">Juego educativo de ciberseguridad</span>
+        <h2 style="margin-top:0;">Aprende jugando a cuidarte en la red digital</h2>
+        <p style="color:#475569; line-height:1.6;">
+          Ideal para familiares, amigos o cualquier persona sin conocimientos técnicos. El objetivo es tomar
+          buenas decisiones frente a situaciones digitales comunes y descubrir qué tan protegido estás.
+        </p>
+
+        <div class="features">
+          <div class="feature">
+            <h3>📧 Casos reales</h3>
+            <p>Correos sospechosos, mensajes falsos y riesgos que pueden pasarle a cualquiera.</p>
+          </div>
+          <div class="feature">
+            <h3>🎯 Aprendizaje rápido</h3>
+            <p>Cada respuesta incluye una explicación clara para aprender en el momento.</p>
+          </div>
+          <div class="feature">
+            <h3>🏆 Resultado final</h3>
+            <p>Al terminar, verás tu nivel de protección y consejos para mejorar tu seguridad.</p>
+          </div>
+        </div>
+
+        <label for="playerName" style="font-weight:bold; display:block; margin-bottom:8px;">Nombre del jugador</label>
+        <div class="form-row">
+          <input id="playerName" type="text" placeholder="Escribe tu nombre" maxlength="30" />
+          <button class="btn btn-primary" id="startBtn">Comenzar juego</button>
+        </div>
+      </section>
+
+      <section id="gameScreen" class="screen">
+        <div class="game-head">
+          <div class="top-stats">
+            <div class="stat">
+              <span class="label">Jugador</span>
+              <span class="value" id="playerDisplay">—</span>
+            </div>
+            <div class="stat">
+              <span class="label">Puntaje</span>
+              <span class="value" id="scoreDisplay">0</span>
+            </div>
+            <div class="stat">
+              <span class="label">Progreso</span>
+              <span class="value" id="progressText">0 / 5</span>
+            </div>
+          </div>
+          <div class="progress-wrap">
+            <div class="progress" id="progressBar"></div>
+          </div>
+        </div>
+
+        <div class="game-body">
+          <span class="level-tag" id="levelTag">Nivel 1</span>
+          <h2 class="scenario" id="scenarioTitle"></h2>
+          <p class="scenario-text" id="scenarioText"></p>
+          <div class="options" id="optionsContainer"></div>
+
+          <div class="feedback" id="feedbackBox">
+            <h3 id="feedbackTitle"></h3>
+            <p id="feedbackText"></p>
+            <div class="feedback-actions">
+              <button class="btn btn-primary" id="nextBtn">Continuar</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="resultScreen" class="screen result">
+        <div class="emoji" id="resultEmoji">🛡️</div>
+        <h2 id="resultTitle">Resultado final</h2>
+        <p id="resultMessage"></p>
+
+        <div class="score-box">
+          <div class="score-item">
+            <strong>Jugador</strong>
+            <span id="finalPlayer">—</span>
+          </div>
+          <div class="score-item">
+            <strong>Puntaje obtenido</strong>
+            <span id="finalScore">0</span>
+          </div>
+          <div class="score-item">
+            <strong>Respuestas correctas</strong>
+            <span id="finalCorrect">0</span>
+          </div>
+        </div>
+
+        <div class="tips">
+          <h3>Consejos clave para protegerte mejor</h3>
+          <ul id="tipsList"></ul>
+        </div>
+
+        <div style="margin-top:20px;">
+          <button class="btn btn-primary" id="restartBtn">Jugar de nuevo</button>
+        </div>
+      </section>
+    </div>
+
+    <div class="footer-note">
+      Hecho como proyecto educativo. Se puede publicar online gratis en GitHub Pages.
+    </div>
+  </div>
+
+  <script>
+    const questions = [
+      {
+        level: "Nivel 1",
+        title: "📧 Correo sospechoso del banco",
+        text: "Recibes un correo que dice que tu cuenta bancaria será bloqueada hoy mismo. El mensaje te pide entrar a un enlace y escribir tus datos personales.",
+        options: [
+          {
+            text: "Dar clic y llenar el formulario para evitar el bloqueo.",
+            correct: false,
+            feedbackTitle: "❌ Riesgo de phishing",
+            feedbackText: "Los correos urgentes que piden enlaces y datos personales suelen ser intentos de robo. Lo correcto es entrar directamente a la página oficial del banco o llamar por canales verificables."
+          },
+          {
+            text: "No abrir el enlace y verificar la información directamente con el banco.",
+            correct: true,
+            feedbackTitle: "✅ Muy buena decisión",
+            feedbackText: "Verificar por canales oficiales te protege frente a correos falsos. Así evitas entregar contraseñas o datos bancarios a ciberdelincuentes."
+          }
+        ]
+      },
+      {
+        level: "Nivel 2",
+        title: "🔑 Elegir una contraseña segura",
+        text: "Vas a crear la contraseña de una cuenta importante. Debe ser difícil de adivinar y más segura que una palabra o una fecha simple.",
+        options: [
+          {
+            text: "12345678",
+            correct: false,
+            feedbackTitle: "❌ Muy insegura",
+            feedbackText: "Las contraseñas simples son de las primeras que prueban los atacantes. Nunca uses combinaciones obvias."
+          },
+          {
+            text: "Maria2026",
+            correct: false,
+            feedbackTitle: "⚠️ Sigue siendo débil",
+            feedbackText: "Combinar un nombre y un año sigue siendo predecible. Es mejor usar mayúsculas, símbolos, números y mayor longitud."
+          },
+          {
+            text: "M4r!a_Segura#26",
+            correct: true,
+            feedbackTitle: "✅ Contraseña más segura",
+            feedbackText: "Una contraseña larga y con combinación de caracteres es mucho más difícil de adivinar. Mejor aún si usas un gestor de contraseñas y activas doble factor."
+          }
+        ]
+      },
+      {
+        level: "Nivel 3",
+        title: "🌐 WiFi público en un café",
+        text: "Estás fuera de casa y encuentras una red WiFi gratis. Necesitas conectarte unos minutos desde tu celular o portátil.",
+        options: [
+          {
+            text: "Entrar a la banca virtual y hacer pagos rápido.",
+            correct: false,
+            feedbackTitle: "❌ Acción riesgosa",
+            feedbackText: "Las redes públicas pueden ser inseguras. No conviene hacer trámites bancarios o compartir datos sensibles mientras estás conectado a una WiFi abierta."
+          },
+          {
+            text: "Usarla solo para navegar información general y evitar cuentas sensibles.",
+            correct: true,
+            feedbackTitle: "✅ Decisión responsable",
+            feedbackText: "En redes públicas es mejor limitarse a tareas de bajo riesgo. Para asuntos privados, usa tus datos móviles o una red segura."
+          }
+        ]
+      },
+      {
+        level: "Nivel 4",
+        title: "📱 App con permisos excesivos",
+        text: "Descargas una aplicación de linterna y al instalarla te pide acceso a contactos, micrófono, cámara y ubicación permanente.",
+        options: [
+          {
+            text: "Aceptar todo para que funcione más rápido.",
+            correct: false,
+            feedbackTitle: "❌ Demasiado peligroso",
+            feedbackText: "Si una app pide permisos que no necesita, puede comprometer tu privacidad. Una linterna no debería requerir acceso a tantos datos personales."
+          },
+          {
+            text: "Revisar los permisos y no instalarla si parecen excesivos.",
+            correct: true,
+            feedbackTitle: "✅ Excelente criterio",
+            feedbackText: "Revisar permisos antes de instalar es una buena práctica. Siempre descarga aplicaciones desde fuentes confiables y con reseñas verificables."
+          }
+        ]
+      },
+      {
+        level: "Nivel 5",
+        title: "👤 Publicación en redes sociales",
+        text: "Te vas de viaje con tu familia y piensas publicar fotos y ubicación exacta en tiempo real durante todos los días.",
+        options: [
+          {
+            text: "Publicar todo al instante y dejar el perfil abierto para todos.",
+            correct: false,
+            feedbackTitle: "❌ Expones demasiada información",
+            feedbackText: "Compartir ubicación en tiempo real puede facilitar riesgos para tu privacidad y seguridad. No siempre conviene mostrar dónde estás o que tu casa está sola."
+          },
+          {
+            text: "Publicar después o limitar la audiencia solo a personas de confianza.",
+            correct: true,
+            feedbackTitle: "✅ Opción más segura",
+            feedbackText: "Controlar la audiencia y publicar con más cuidado ayuda a proteger tu privacidad. Pensar antes de publicar es parte de la seguridad digital."
+          }
+        ]
+      }
+    ];
+
+    let currentQuestion = 0;
+    let score = 0;
+    let correctAnswers = 0;
+    let playerName = "";
+
+    const startScreen = document.getElementById("startScreen");
+    const gameScreen = document.getElementById("gameScreen");
+    const resultScreen = document.getElementById("resultScreen");
+
+    const playerNameInput = document.getElementById("playerName");
+    const playerDisplay = document.getElementById("playerDisplay");
+    const scoreDisplay = document.getElementById("scoreDisplay");
+    const progressText = document.getElementById("progressText");
+    const progressBar = document.getElementById("progressBar");
+
+    const levelTag = document.getElementById("levelTag");
+    const scenarioTitle = document.getElementById("scenarioTitle");
+    const scenarioText = document.getElementById("scenarioText");
+    const optionsContainer = document.getElementById("optionsContainer");
+
+    const feedbackBox = document.getElementById("feedbackBox");
+    const feedbackTitle = document.getElementById("feedbackTitle");
+    const feedbackText = document.getElementById("feedbackText");
+    const nextBtn = document.getElementById("nextBtn");
+
+    const resultEmoji = document.getElementById("resultEmoji");
+    const resultTitle = document.getElementById("resultTitle");
+    const resultMessage = document.getElementById("resultMessage");
+    const finalPlayer = document.getElementById("finalPlayer");
+    const finalScore = document.getElementById("finalScore");
+    const finalCorrect = document.getElementById("finalCorrect");
+    const tipsList = document.getElementById("tipsList");
+
+    document.getElementById("startBtn").addEventListener("click", startGame);
+    document.getElementById("restartBtn").addEventListener("click", restartGame);
+    nextBtn.addEventListener("click", nextQuestion);
+
+    function showScreen(screen){
+      [startScreen, gameScreen, resultScreen].forEach(s => s.classList.remove("active"));
+      screen.classList.add("active");
+    }
+
+    function startGame(){
+      playerName = playerNameInput.value.trim() || "Jugador";
+      currentQuestion = 0;
+      score = 0;
+      correctAnswers = 0;
+      playerDisplay.textContent = playerName;
+      showScreen(gameScreen);
+      renderQuestion();
+    }
+
+    function renderQuestion(){
+      const q = questions[currentQuestion];
+      levelTag.textContent = q.level;
+      scenarioTitle.textContent = q.title;
+      scenarioText.textContent = q.text;
+
+      scoreDisplay.textContent = score;
+      progressText.textContent = `${currentQuestion + 1} / ${questions.length}`;
+      progressBar.style.width = `${(currentQuestion / questions.length) * 100}%`;
+
+      optionsContainer.innerHTML = "";
+      feedbackBox.className = "feedback";
+      feedbackTitle.textContent = "";
+      feedbackText.textContent = "";
+
+      q.options.forEach(option => {
+        const btn = document.createElement("button");
+        btn.className = "option-btn";
+        btn.textContent = option.text;
+        btn.addEventListener("click", () => handleAnswer(option));
+        optionsContainer.appendChild(btn);
+      });
+    }
+
+    function handleAnswer(selectedOption){
+      const buttons = optionsContainer.querySelectorAll("button");
+      buttons.forEach(btn => btn.disabled = true);
+
+      if(selectedOption.correct){
+        score += 20;
+        correctAnswers++;
+        feedbackBox.classList.add("show", "correct");
+      } else {
+        feedbackBox.classList.add("show", "incorrect");
+      }
+
+      scoreDisplay.textContent = score;
+      feedbackTitle.textContent = selectedOption.feedbackTitle;
+      feedbackText.textContent = selectedOption.feedbackText;
+    }
+
+    function nextQuestion(){
+      currentQuestion++;
+      if(currentQuestion < questions.length){
+        renderQuestion();
+      } else {
+        showResults();
+      }
+    }
+
+    function showResults(){
+      showScreen(resultScreen);
+      progressBar.style.width = "100%";
+
+      finalPlayer.textContent = playerName;
+      finalScore.textContent = `${score} puntos`;
+      finalCorrect.textContent = `${correctAnswers} de ${questions.length}`;
+
+      let emoji = "🚨";
+      let title = "Usuario vulnerable";
+      let message = `${playerName}, todavía hay varios hábitos digitales por fortalecer. La buena noticia es que este juego te mostró decisiones que te ayudarán a protegerte mejor.`;
+      const tips = [
+        "No abras enlaces sospechosos de correos o mensajes urgentes.",
+        "Crea contraseñas largas y difíciles de adivinar.",
+        "Evita hacer trámites sensibles en redes WiFi públicas.",
+        "Revisa los permisos antes de instalar aplicaciones.",
+        "No compartas demasiada información personal en redes sociales."
+      ];
+
+      if(score >= 80){
+        emoji = "🛡️";
+        title = "Usuario protegido";
+        message = `${playerName}, tomaste decisiones muy seguras. Tienes buenos hábitos digitales y entiendes cómo proteger tu información en internet.`;
+      } else if(score >= 40){
+        emoji = "⚠️";
+        title = "Usuario en riesgo moderado";
+        message = `${playerName}, vas por buen camino, pero todavía hay situaciones en las que podrías exponerte. Con pequeños cambios puedes mejorar mucho tu seguridad digital.`;
+      }
+
+      resultEmoji.textContent = emoji;
+      resultTitle.textContent = title;
+      resultMessage.textContent = message;
+
+      tipsList.innerHTML = "";
+      tips.forEach(tip => {
+        const li = document.createElement("li");
+        li.textContent = tip;
+        tipsList.appendChild(li);
+      });
+    }
+
+    function restartGame(){
+      playerNameInput.value = "";
+      showScreen(startScreen);
+    }
+  </script>
+</body>
+</html>
